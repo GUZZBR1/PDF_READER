@@ -1,7 +1,14 @@
 from pathlib import Path
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pypdf import PdfReader, PdfWriter
+
+from app.utils.errors import (
+    invalid_angle,
+    invalid_page_ranges,
+    missing_file,
+    processing_failure,
+)
 
 ALLOWED_ROTATION_ANGLES = {90, 180, 270}
 
@@ -13,26 +20,22 @@ def rotate_pdf_pages(
     angle: int,
 ) -> Path:
     if angle not in ALLOWED_ROTATION_ANGLES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid rotation angle. Allowed angles are 90, 180, and 270.",
-        )
+        raise invalid_angle()
 
     try:
+        if not input_path.exists():
+            raise missing_file("Uploaded PDF file was not found.")
+
         reader = PdfReader(str(input_path))
         total_pages = len(reader.pages)
         rotate_indexes = set(pages_to_rotate)
 
         if not rotate_indexes:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="At least one page must be selected for rotation.",
-            )
+            raise invalid_page_ranges("At least one page must be selected for rotation.")
 
         if any(page_index < 0 or page_index >= total_pages for page_index in rotate_indexes):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Page rotation selection is out of bounds. PDF has {total_pages} pages.",
+            raise invalid_page_ranges(
+                f"Page rotation selection is out of bounds. PDF has {total_pages} pages."
             )
 
         writer = PdfWriter()
@@ -52,7 +55,4 @@ def rotate_pdf_pages(
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to rotate PDF pages.",
-        ) from exc
+        raise processing_failure("Failed to rotate PDF pages.") from exc

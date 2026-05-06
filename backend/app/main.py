@@ -9,7 +9,11 @@ from app.routes.rotate import router as rotate_router
 from app.routes.split import router as split_router
 from app.routes.upload import router as upload_router
 
-app = FastAPI(title="Private PDF Tool")
+app = FastAPI(
+    title="Private PDF Tool",
+    description="Private backend API for personal PDF utilities.",
+    version="0.1.0",
+)
 
 app.include_router(compress_router)
 app.include_router(image_to_pdf_router)
@@ -21,6 +25,6 @@ app.include_router(split_router)
 app.include_router(upload_router)
 
 
-@app.get("/health")
+@app.get("/health", tags=["health"])
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {"status": "ok", "service": "private-pdf-tool"}

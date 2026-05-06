@@ -1,7 +1,11 @@
 import subprocess
 from pathlib import Path
 
-from fastapi import HTTPException, status
+from app.utils.errors import (
+    invalid_compression_level,
+    missing_file,
+    processing_failure,
+)
 
 COMPRESSION_SETTINGS = {
     "low": "/printer",
@@ -18,10 +22,10 @@ def compress_pdf(
     normalized_level = compression_level.strip().lower()
 
     if normalized_level not in COMPRESSION_SETTINGS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid compression level. Allowed levels are low, medium, and high.",
-        )
+        raise invalid_compression_level()
+
+    if not input_path.exists():
+        raise missing_file("Uploaded PDF file was not found.")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -45,29 +49,19 @@ def compress_pdf(
             check=False,
         )
     except FileNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="PDF compression requires Ghostscript to be installed.",
+        raise processing_failure(
+            "PDF compression requires Ghostscript to be installed."
         ) from exc
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to start PDF compression.",
-        ) from exc
+        raise processing_failure("Failed to start PDF compression.") from exc
 
     if result.returncode != 0:
         ghostscript_error = (
             result.stderr.strip() or "Ghostscript returned a non-zero exit code."
         )
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to compress PDF. {ghostscript_error[:500]}",
-        )
+        raise processing_failure(f"Failed to compress PDF. {ghostscript_error[:500]}")
 
     if not output_path.exists() or output_path.stat().st_size == 0:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="PDF compression did not create a valid output file.",
-        )
+        raise processing_failure("PDF compression did not create a valid output file.")
 
     return output_path
