@@ -254,6 +254,132 @@ h1 {
   font-weight: 700;
 }
 
+.status-label.is-connected {
+  color: #0b5f59;
+  background: var(--accent-soft);
+}
+
+.file-upload-dropzone {
+  display: grid;
+  min-height: 280px;
+  place-items: center;
+  border-bottom: 1px solid var(--border);
+  padding: 28px;
+  text-align: center;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.file-upload-dropzone.is-dragging {
+  background: var(--accent-soft);
+}
+
+.file-input {
+  display: none;
+}
+
+.primary-button {
+  width: min(100%, 260px);
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--accent);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.primary-button:disabled {
+  background: #8ca19f;
+  cursor: not-allowed;
+}
+
+.selected-files {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+}
+
+.selected-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.selected-files-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.selected-files-header span,
+.file-size {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.file-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.file-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-muted);
+}
+
+.file-meta {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.file-name {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-file-button {
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.remove-file-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.status-info {
+  font-weight: 700;
+}
+
+.status-error {
+  color: #b42318;
+  font-weight: 700;
+}
+
+.status-success {
+  color: #0b5f59;
+  font-weight: 700;
+}
+
 @media (max-width: 860px) {
   .tools-grid,
   .tool-layout {
@@ -281,5 +407,14 @@ h1 {
   .upload-placeholder {
     min-height: 280px;
     padding: 22px;
+  }
+
+  .file-list-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .remove-file-button {
+    width: 100%;
   }
 }
