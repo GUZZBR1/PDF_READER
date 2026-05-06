@@ -183,7 +183,7 @@ export default function PdfToImagePage() {
           </section>
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Export each PDF page as an image file inside a ZIP archive.</p>
           {isConverting ? (
             <p className="status-info">Converting PDF to images...</p>

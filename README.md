@@ -126,6 +126,52 @@ Backend system dependencies are installed in `backend/Dockerfile`:
 - `/pdf-to-image`
 - `/compress`
 
+## Smoke Test Checklist
+
+Before first deployment, run a full browser smoke test with Docker and the
+frontend dev server running:
+
+```bash
+docker compose up --build
+cd frontend
+npm run dev
+```
+
+Use representative local files:
+
+- small PDF
+- multi-page PDF
+- larger PDF
+- image-heavy PDF
+- JPG image
+- PNG image
+- WEBP image
+
+Validate each frontend tool downloads an output file:
+
+- Merge two or more PDFs and confirm page order
+- Split with `1-3`, `5`, and `1-3,5,8-10`
+- Remove selected pages and confirm remaining pages
+- Rotate all pages and selected page ranges
+- Convert JPG, PNG, and WEBP images to one PDF after reordering
+- Convert a PDF to PNG and JPEG ZIP outputs at multiple DPI values
+- Compress the same PDF with low, medium, and high levels and compare sizes
+
+After each backend run, confirm `backend/app/temp` only contains `.gitkeep`.
+
+## Troubleshooting
+
+- If the frontend loads but conversions fail, confirm the backend is reachable
+  at `http://localhost:8000/health`.
+- If PDF-to-image fails in Docker, rebuild the backend image and confirm
+  `poppler-utils` is installed.
+- If compression fails in Docker, rebuild the backend image and confirm
+  `ghostscript` is installed.
+- If running outside Docker, the host machine must provide the Python
+  dependencies in `backend/requirements.txt`, Ghostscript, and Poppler.
+- `NEXT_PUBLIC_API_URL` controls the frontend backend URL. It defaults to
+  `http://localhost:8000`.
+
 ## Development Notes
 
 - The backend writes uploaded and generated files under `backend/app/temp`.

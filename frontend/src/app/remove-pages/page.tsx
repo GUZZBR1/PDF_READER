@@ -143,7 +143,7 @@ export default function RemovePagesPage() {
           </section>
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Remove selected pages from one PDF and download the result.</p>
           {isRemoving ? <p className="status-info">Removing pages...</p> : null}
           {error ? <p className="status-error">{error}</p> : null}

@@ -180,7 +180,7 @@ export default function RotatePage() {
           </section>
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Rotate all pages or selected ranges from one PDF.</p>
           {isRotating ? <p className="status-info">Rotating PDF...</p> : null}
           {error ? <p className="status-error">{error}</p> : null}

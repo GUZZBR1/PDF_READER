@@ -234,7 +234,7 @@ export default function ImageToPdfPage() {
           ) : null}
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Convert selected images into a single PDF in the order shown.</p>
           {isConverting ? (
             <p className="status-info">Converting images to PDF...</p>
