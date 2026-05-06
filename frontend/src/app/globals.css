@@ -380,7 +380,8 @@ h1 {
   font-weight: 700;
 }
 
-.split-workflow {
+.split-workflow,
+.tool-workflow {
   display: grid;
   gap: 16px;
 }
