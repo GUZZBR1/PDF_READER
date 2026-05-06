@@ -456,6 +456,64 @@ h1 {
   opacity: 0.7;
 }
 
+.image-list-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.image-preview-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.image-preview-item {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--surface-muted);
+}
+
+.image-preview-frame {
+  width: 84px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.image-preview {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview-meta {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 @media (max-width: 860px) {
   .tools-grid,
   .tool-layout {
@@ -476,6 +534,7 @@ h1 {
 
   .tool-card,
   .form-panel,
+  .image-list-panel,
   .upload-panel,
   .status-panel {
     box-shadow: none;
@@ -489,6 +548,19 @@ h1 {
   .file-list-item {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .image-preview-item {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .image-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .image-actions .remove-file-button {
+    flex: 1 1 90px;
   }
 
   .remove-file-button {

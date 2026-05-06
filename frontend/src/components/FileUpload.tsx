@@ -8,11 +8,13 @@ type FileUploadProps = {
   buttonLabel?: string;
   disabled?: boolean;
   helperText?: string;
+  iconLabel?: string;
   label?: string;
   multiple?: boolean;
   onFilesAdded: (files: File[]) => void;
   onRemoveFile: (index: number) => void;
   selectedFilesLabel?: string;
+  showSelectedFiles?: boolean;
 };
 
 export default function FileUpload({
@@ -21,11 +23,13 @@ export default function FileUpload({
   buttonLabel = "Choose PDFs",
   disabled = false,
   helperText = "Drag files here or choose them from your device.",
+  iconLabel = "PDF",
   label = "Select PDF files",
   multiple = true,
   onFilesAdded,
   onRemoveFile,
   selectedFilesLabel = "Selected files",
+  showSelectedFiles = true,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -84,7 +88,7 @@ export default function FileUpload({
         />
         <div className="upload-placeholder-inner">
           <div className="upload-icon" aria-hidden="true">
-            PDF
+            {iconLabel}
           </div>
           <div>
             <h2>{label}</h2>
@@ -101,7 +105,7 @@ export default function FileUpload({
         </div>
       </div>
 
-      {files.length > 0 ? (
+      {showSelectedFiles && files.length > 0 ? (
         <div className="selected-files">
           <div className="selected-files-header">
             <h2>{selectedFilesLabel}</h2>
