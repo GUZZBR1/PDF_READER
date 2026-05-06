@@ -1,0 +1,137 @@
+"use client";
+
+import { ChangeEvent, DragEvent, useRef, useState } from "react";
+
+type FileUploadProps = {
+  files: File[];
+  accept?: string;
+  disabled?: boolean;
+  helperText?: string;
+  multiple?: boolean;
+  onFilesAdded: (files: File[]) => void;
+  onRemoveFile: (index: number) => void;
+};
+
+export default function FileUpload({
+  files,
+  accept,
+  disabled = false,
+  helperText = "Drag files here or choose them from your device.",
+  multiple = true,
+  onFilesAdded,
+  onRemoveFile,
+}: FileUploadProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleFiles(fileList: FileList | null) {
+    if (!fileList || disabled) {
+      return;
+    }
+
+    onFilesAdded(Array.from(fileList));
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  }
+
+  function handleChange(event: ChangeEvent<HTMLInputElement>) {
+    handleFiles(event.target.files);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+
+    if (!disabled) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    setIsDragging(false);
+    handleFiles(event.dataTransfer.files);
+  }
+
+  return (
+    <section className="upload-panel" aria-label="File upload">
+      <div
+        className={`file-upload-dropzone${isDragging ? " is-dragging" : ""}`}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <input
+          ref={inputRef}
+          accept={accept}
+          className="file-input"
+          disabled={disabled}
+          multiple={multiple}
+          onChange={handleChange}
+          type="file"
+        />
+        <div className="upload-placeholder-inner">
+          <div className="upload-icon" aria-hidden="true">
+            PDF
+          </div>
+          <div>
+            <h2>Select PDF files</h2>
+            <p>{helperText}</p>
+          </div>
+          <button
+            className="primary-button"
+            disabled={disabled}
+            onClick={() => inputRef.current?.click()}
+            type="button"
+          >
+            Choose PDFs
+          </button>
+        </div>
+      </div>
+
+      {files.length > 0 ? (
+        <div className="selected-files">
+          <div className="selected-files-header">
+            <h2>Selected files</h2>
+            <span>{files.length} total</span>
+          </div>
+          <ul className="file-list">
+            {files.map((file, index) => (
+              <li
+                className="file-list-item"
+                key={`${file.name}-${file.lastModified}-${index}`}
+              >
+                <div className="file-meta">
+                  <span className="file-name">{file.name}</span>
+                  <span className="file-size">{formatFileSize(file.size)}</span>
+                </div>
+                <button
+                  className="remove-file-button"
+                  disabled={disabled}
+                  onClick={() => onRemoveFile(index)}
+                  type="button"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function formatFileSize(size: number) {
+  if (size < 1024 * 1024) {
+    return `${Math.max(1, Math.round(size / 1024))} KB`;
+  }
+
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+}
