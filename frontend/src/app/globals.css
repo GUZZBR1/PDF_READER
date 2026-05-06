@@ -427,6 +427,35 @@ h1 {
   line-height: 1.5;
 }
 
+.angle-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.angle-option {
+  min-height: 42px;
+  min-width: 78px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: var(--text);
+  background: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.angle-option.is-selected {
+  border-color: rgba(15, 118, 110, 0.42);
+  color: #0b5f59;
+  background: var(--accent-soft);
+}
+
+.angle-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 @media (max-width: 860px) {
   .tools-grid,
   .tool-layout {
