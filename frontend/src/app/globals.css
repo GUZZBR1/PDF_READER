@@ -380,6 +380,52 @@ h1 {
   font-weight: 700;
 }
 
+.split-workflow {
+  display: grid;
+  gap: 16px;
+}
+
+.form-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.field-label {
+  font-weight: 700;
+}
+
+.text-input {
+  min-height: 44px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--text);
+  background: #ffffff;
+}
+
+.text-input:focus {
+  border-color: rgba(15, 118, 110, 0.7);
+  outline: 3px solid rgba(15, 118, 110, 0.14);
+}
+
+.text-input:disabled {
+  color: var(--muted);
+  background: var(--surface-muted);
+  cursor: not-allowed;
+}
+
+.field-help {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 @media (max-width: 860px) {
   .tools-grid,
   .tool-layout {
@@ -399,6 +445,7 @@ h1 {
   }
 
   .tool-card,
+  .form-panel,
   .upload-panel,
   .status-panel {
     box-shadow: none;

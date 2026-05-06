@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint } from "@/lib/api";
+import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
 
 export default function MergePage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -57,7 +57,12 @@ export default function MergePage() {
       });
 
       if (!response.ok) {
-        throw new Error(await readErrorMessage(response));
+        throw new Error(
+          await readApiErrorMessage(
+            response,
+            "The backend could not merge the selected PDFs.",
+          ),
+        );
       }
 
       const mergedPdf = await response.blob();
@@ -89,12 +94,15 @@ export default function MergePage() {
       <div className="tool-layout">
         <FileUpload
           accept=".pdf,application/pdf"
+          buttonLabel="Choose PDFs"
           disabled={isMerging}
           files={files}
           helperText="Drag 2 or more PDF files here, or choose them from your device."
+          label="Select PDF files"
           multiple
           onFilesAdded={addFiles}
           onRemoveFile={removeFile}
+          selectedFilesLabel="Selected files"
         />
         <aside className="status-panel">
           <span className="status-label is-connected">Backend connected</span>
@@ -118,35 +126,4 @@ export default function MergePage() {
 
 function isPdfFile(file: File) {
   return file.name.toLowerCase().endsWith(".pdf");
-}
-
-async function readErrorMessage(response: Response) {
-  try {
-    const contentType = response.headers.get("content-type") ?? "";
-
-    if (contentType.includes("application/json")) {
-      const data = (await response.json()) as { detail?: unknown };
-
-      if (typeof data.detail === "string") {
-        return data.detail;
-      }
-    }
-
-    const text = await response.text();
-    return text || "The backend could not merge the selected PDFs.";
-  } catch {
-    return "The backend could not merge the selected PDFs.";
-  }
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
 }

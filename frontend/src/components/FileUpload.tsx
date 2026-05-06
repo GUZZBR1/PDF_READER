@@ -5,21 +5,27 @@ import { ChangeEvent, DragEvent, useRef, useState } from "react";
 type FileUploadProps = {
   files: File[];
   accept?: string;
+  buttonLabel?: string;
   disabled?: boolean;
   helperText?: string;
+  label?: string;
   multiple?: boolean;
   onFilesAdded: (files: File[]) => void;
   onRemoveFile: (index: number) => void;
+  selectedFilesLabel?: string;
 };
 
 export default function FileUpload({
   files,
   accept,
+  buttonLabel = "Choose PDFs",
   disabled = false,
   helperText = "Drag files here or choose them from your device.",
+  label = "Select PDF files",
   multiple = true,
   onFilesAdded,
   onRemoveFile,
+  selectedFilesLabel = "Selected files",
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -81,7 +87,7 @@ export default function FileUpload({
             PDF
           </div>
           <div>
-            <h2>Select PDF files</h2>
+            <h2>{label}</h2>
             <p>{helperText}</p>
           </div>
           <button
@@ -90,7 +96,7 @@ export default function FileUpload({
             onClick={() => inputRef.current?.click()}
             type="button"
           >
-            Choose PDFs
+            {buttonLabel}
           </button>
         </div>
       </div>
@@ -98,7 +104,7 @@ export default function FileUpload({
       {files.length > 0 ? (
         <div className="selected-files">
           <div className="selected-files-header">
-            <h2>Selected files</h2>
+            <h2>{selectedFilesLabel}</h2>
             <span>{files.length} total</span>
           </div>
           <ul className="file-list">
