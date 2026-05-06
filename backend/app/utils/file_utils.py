@@ -16,9 +16,9 @@ def generate_safe_filename(extension: str = ".pdf") -> str:
     return f"{uuid4().hex}{normalized_extension.lower()}"
 
 
-async def save_upload_file(file: UploadFile) -> tuple[Path, str]:
+async def save_upload_file(file: UploadFile, extension: str = ".pdf") -> tuple[Path, str]:
     temp_dir = ensure_temp_dir()
-    filename = generate_safe_filename(".pdf")
+    filename = generate_safe_filename(extension)
     file_path = temp_dir / filename
 
     with file_path.open("wb") as output_file:

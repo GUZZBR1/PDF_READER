@@ -4,6 +4,8 @@ from fastapi import HTTPException, UploadFile, status
 
 DEFAULT_MAX_FILE_SIZE = 25 * 1024 * 1024
 PDF_CONTENT_TYPES = {"application/pdf", "application/x-pdf"}
+IMAGE_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 
 def validate_pdf_extension(file: UploadFile) -> None:
@@ -54,4 +56,34 @@ async def validate_pdf_upload(
 ) -> None:
     validate_pdf_extension(file)
     validate_pdf_content_type(file)
+    await validate_file_size(file, max_size=max_size)
+
+
+def validate_image_extension(file: UploadFile) -> None:
+    filename = file.filename or ""
+
+    if Path(filename).suffix.lower() not in IMAGE_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only JPG, PNG, and WEBP image files are allowed.",
+        )
+
+
+def validate_image_content_type(file: UploadFile) -> None:
+    if not file.content_type:
+        return
+
+    if file.content_type.lower() not in IMAGE_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image content type. Only JPEG, PNG, and WEBP images are allowed.",
+        )
+
+
+async def validate_image_upload(
+    file: UploadFile,
+    max_size: int = DEFAULT_MAX_FILE_SIZE,
+) -> None:
+    validate_image_extension(file)
+    validate_image_content_type(file)
     await validate_file_size(file, max_size=max_size)
