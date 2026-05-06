@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function MergePage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -67,7 +68,7 @@ export default function MergePage() {
 
       const mergedPdf = await response.blob();
 
-      if (!mergedPdf.size || mergedPdf.type !== "application/pdf") {
+      if (!isPdfBlob(mergedPdf)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -122,8 +123,4 @@ export default function MergePage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }

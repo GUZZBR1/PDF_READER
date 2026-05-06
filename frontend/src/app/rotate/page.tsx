@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 const ROTATION_ANGLES = [90, 180, 270] as const;
 
@@ -95,7 +96,7 @@ export default function RotatePage() {
 
       const rotatedPdf = await response.blob();
 
-      if (!rotatedPdf.size || rotatedPdf.type !== "application/pdf") {
+      if (!isPdfBlob(rotatedPdf)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -196,10 +197,6 @@ export default function RotatePage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }
 
 function isValidAngle(value: number): value is RotationAngle {

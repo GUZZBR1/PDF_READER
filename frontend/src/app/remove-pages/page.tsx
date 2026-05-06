@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function RemovePagesPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -81,7 +82,7 @@ export default function RemovePagesPage() {
 
       const removedPagesPdf = await response.blob();
 
-      if (!removedPagesPdf.size || removedPagesPdf.type !== "application/pdf") {
+      if (!isPdfBlob(removedPagesPdf)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -159,10 +160,6 @@ export default function RemovePagesPage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }
 
 function validatePageRanges(value: string) {

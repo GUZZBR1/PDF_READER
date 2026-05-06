@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 const COMPRESSION_LEVELS = [
   {
@@ -100,7 +101,7 @@ export default function CompressPage() {
 
       const compressedPdf = await response.blob();
 
-      if (!compressedPdf.size || compressedPdf.type !== "application/pdf") {
+      if (!isPdfBlob(compressedPdf)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -186,10 +187,6 @@ export default function CompressPage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }
 
 function isValidCompressionLevel(value: string): value is CompressionLevel {

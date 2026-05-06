@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { formatFileSize, isPdfBlob } from "@/lib/files";
 
 const ACCEPTED_IMAGE_TYPES = ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp";
 const ALLOWED_IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
@@ -138,7 +139,7 @@ export default function ImageToPdfPage() {
 
       const pdf = await response.blob();
 
-      if (!pdf.size || pdf.type !== "application/pdf") {
+      if (!isPdfBlob(pdf)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -271,12 +272,4 @@ function getFileExtension(fileName: string) {
 
 function createImageId(file: File) {
   return `${file.name}-${file.lastModified}-${file.size}-${crypto.randomUUID()}`;
-}
-
-function formatFileSize(size: number) {
-  if (size < 1024 * 1024) {
-    return `${Math.max(1, Math.round(size / 1024))} KB`;
-  }
-
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
 }

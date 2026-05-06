@@ -30,6 +30,23 @@ export default function Home() {
           />
         ))}
       </section>
+
+      <section className="mvp-summary" aria-label="MVP status">
+        <div>
+          <h2>Local backend</h2>
+          <p>Frontend requests default to the FastAPI service on port 8000.</p>
+        </div>
+        <div>
+          <h2>Temporary files</h2>
+          <p>Uploaded and generated files are cleaned after each response.</p>
+        </div>
+        <div>
+          <h2>MVP scope</h2>
+          <p>No accounts, database, cloud storage, or analytics are included.</p>
+        </div>
+      </section>
+
+      <footer className="app-footer">Private PDF Tool MVP</footer>
     </main>
   );
 }

@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfFile, isZipBlob } from "@/lib/files";
 
 const IMAGE_FORMATS = ["png", "jpeg"] as const;
 const DEFAULT_DPI = "200";
@@ -96,10 +97,7 @@ export default function PdfToImagePage() {
       const contentType = response.headers.get("content-type") ?? "";
       const imageZip = await response.blob();
 
-      if (
-        !imageZip.size ||
-        (contentType && !contentType.includes("zip") && !contentType.includes("octet-stream"))
-      ) {
+      if (!isZipBlob(imageZip, contentType)) {
         throw new Error("The backend did not return a valid ZIP file.");
       }
 
@@ -204,10 +202,6 @@ export default function PdfToImagePage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }
 
 function isValidImageFormat(value: string): value is ImageFormat {

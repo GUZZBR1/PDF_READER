@@ -5,6 +5,7 @@ import { useState } from "react";
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
 import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function SplitPage() {
   const [files, setFiles] = useState<File[]>([]);
@@ -81,7 +82,7 @@ export default function SplitPage() {
 
       const splitPdfBlob = await response.blob();
 
-      if (!splitPdfBlob.size || splitPdfBlob.type !== "application/pdf") {
+      if (!isPdfBlob(splitPdfBlob)) {
         throw new Error("The backend did not return a valid PDF file.");
       }
 
@@ -159,10 +160,6 @@ export default function SplitPage() {
       </div>
     </main>
   );
-}
-
-function isPdfFile(file: File) {
-  return file.name.toLowerCase().endsWith(".pdf");
 }
 
 function validatePageRanges(value: string) {

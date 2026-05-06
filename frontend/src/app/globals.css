@@ -42,6 +42,13 @@ input {
   font: inherit;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgba(15, 118, 110, 0.22);
+  outline-offset: 3px;
+}
+
 .app-shell {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -159,6 +166,34 @@ h1 {
   color: var(--accent);
   font-size: 0.94rem;
   font-weight: 700;
+}
+
+.mvp-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  border-top: 1px solid var(--border);
+  margin-top: 36px;
+  padding-top: 24px;
+}
+
+.mvp-summary h2 {
+  margin: 0 0 8px;
+  font-size: 0.98rem;
+}
+
+.mvp-summary p,
+.app-footer {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.app-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 28px;
+  padding-top: 18px;
+  font-size: 0.9rem;
 }
 
 .page-header {
@@ -288,6 +323,9 @@ h1 {
   background: var(--accent);
   cursor: pointer;
   font-weight: 700;
+  transition:
+    background 160ms ease,
+    opacity 160ms ease;
 }
 
 .primary-button:disabled {
@@ -371,12 +409,18 @@ h1 {
 }
 
 .status-error {
+  border-radius: 8px;
+  padding: 10px 12px;
   color: #b42318;
+  background: #fff0ed;
   font-weight: 700;
 }
 
 .status-success {
+  border-radius: 8px;
+  padding: 10px 12px;
   color: #0b5f59;
+  background: var(--accent-soft);
   font-weight: 700;
 }
 
@@ -556,6 +600,7 @@ h1 {
 
 @media (max-width: 860px) {
   .tools-grid,
+  .mvp-summary,
   .tool-layout {
     grid-template-columns: 1fr;
   }
