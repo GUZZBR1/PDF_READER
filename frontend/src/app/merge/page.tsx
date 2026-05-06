@@ -106,7 +106,7 @@ export default function MergePage() {
           selectedFilesLabel="Selected files"
         />
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Send selected PDFs to the private backend and download the merged result.</p>
           {isMerging ? <p className="status-info">Merging PDFs...</p> : null}
           {error ? <p className="status-error">{error}</p> : null}

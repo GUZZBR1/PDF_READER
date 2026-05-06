@@ -143,7 +143,7 @@ export default function SplitPage() {
           </section>
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Extract selected pages from one PDF and download the result.</p>
           {isSplitting ? <p className="status-info">Extracting pages...</p> : null}
           {error ? <p className="status-error">{error}</p> : null}

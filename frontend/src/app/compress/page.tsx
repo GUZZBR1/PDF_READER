@@ -170,7 +170,7 @@ export default function CompressPage() {
           </section>
         </div>
         <aside className="status-panel">
-          <span className="status-label is-connected">Backend connected</span>
+          <span className="status-label">Local backend required</span>
           <p>Compress one PDF and download the smaller result.</p>
           {isCompressing ? <p className="status-info">Compressing PDF...</p> : null}
           {error ? <p className="status-error">{error}</p> : null}
