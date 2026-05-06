@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from app.routes.compress import router as compress_router
 from app.routes.image_to_pdf import router as image_to_pdf_router
 from app.routes.merge import router as merge_router
 from app.routes.pdf_to_image import router as pdf_to_image_router
@@ -10,6 +11,7 @@ from app.routes.upload import router as upload_router
 
 app = FastAPI(title="Private PDF Tool")
 
+app.include_router(compress_router)
 app.include_router(image_to_pdf_router)
 app.include_router(merge_router)
 app.include_router(pdf_to_image_router)
