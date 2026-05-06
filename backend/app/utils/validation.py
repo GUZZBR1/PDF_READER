@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from fastapi import HTTPException, UploadFile, status
+from fastapi import UploadFile, status
+
+from app.utils.errors import invalid_file, unsupported_format
 
 DEFAULT_MAX_FILE_SIZE = 25 * 1024 * 1024
 PDF_CONTENT_TYPES = {"application/pdf", "application/x-pdf"}
@@ -12,10 +14,7 @@ def validate_pdf_extension(file: UploadFile) -> None:
     filename = file.filename or ""
 
     if Path(filename).suffix.lower() != ".pdf":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only PDF files with a .pdf extension are allowed.",
-        )
+        raise invalid_file("Only PDF files with a .pdf extension are allowed.")
 
 
 def validate_pdf_content_type(file: UploadFile) -> None:
@@ -23,10 +22,7 @@ def validate_pdf_content_type(file: UploadFile) -> None:
         return
 
     if file.content_type.lower() not in PDF_CONTENT_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file content type. Only application/pdf is allowed.",
-        )
+        raise invalid_file("Invalid file content type. Only application/pdf is allowed.")
 
 
 async def validate_file_size(
@@ -42,9 +38,9 @@ async def validate_file_size(
 
             if total_size > max_size:
                 max_size_mb = max_size // (1024 * 1024)
-                raise HTTPException(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                raise invalid_file(
                     detail=f"File is too large. Maximum size is {max_size_mb}MB.",
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
                 )
     finally:
         await file.seek(0)
@@ -63,10 +59,7 @@ def validate_image_extension(file: UploadFile) -> None:
     filename = file.filename or ""
 
     if Path(filename).suffix.lower() not in IMAGE_EXTENSIONS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only JPG, PNG, and WEBP image files are allowed.",
-        )
+        raise unsupported_format("Only JPG, PNG, and WEBP image files are allowed.")
 
 
 def validate_image_content_type(file: UploadFile) -> None:
@@ -74,9 +67,8 @@ def validate_image_content_type(file: UploadFile) -> None:
         return
 
     if file.content_type.lower() not in IMAGE_CONTENT_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid image content type. Only JPEG, PNG, and WEBP images are allowed.",
+        raise unsupported_format(
+            "Invalid image content type. Only JPEG, PNG, and WEBP images are allowed."
         )
 
 

@@ -1,8 +1,6 @@
-import shutil
 from pathlib import Path
-from uuid import uuid4
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
@@ -11,18 +9,20 @@ from app.services.pdf_to_image_service import (
     convert_pdf_to_images,
     create_images_zip,
 )
-from app.utils.file_utils import ensure_temp_dir, safe_delete_file, save_upload_file
+from app.utils.errors import invalid_request, processing_failure, unsupported_format
+from app.utils.file_utils import (
+    create_temp_output_dir,
+    create_temp_output_path,
+    safe_delete_directory,
+    safe_delete_file,
+    save_upload_file,
+)
 from app.utils.validation import validate_pdf_upload
 
 router = APIRouter(prefix="/pdf", tags=["pdf"])
 
 MIN_DPI = 72
 MAX_DPI = 300
-
-
-def delete_directory(directory_path: Path) -> None:
-    if directory_path.exists() and directory_path.is_dir():
-        shutil.rmtree(directory_path)
 
 
 @router.post("/to-image")
@@ -38,23 +38,18 @@ async def pdf_to_image(
 
     try:
         if normalized_format not in SUPPORTED_OUTPUT_FORMATS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid image format. Allowed formats are png and jpeg.",
+            raise unsupported_format(
+                "Invalid image format. Allowed formats are png and jpeg."
             )
 
         if dpi < MIN_DPI or dpi > MAX_DPI:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid DPI. Allowed range is 72 to 300.",
-            )
+            raise invalid_request("Invalid DPI. Allowed range is 72 to 300.")
 
         await validate_pdf_upload(file)
         saved_path, _ = await save_upload_file(file)
 
-        temp_dir = ensure_temp_dir()
-        output_dir = temp_dir / f"pdf-images-{uuid4().hex}"
-        output_zip_path = temp_dir / f"pdf-images-{uuid4().hex}.zip"
+        output_dir = create_temp_output_dir("pdf-images")
+        output_zip_path = create_temp_output_path("pdf-images", ".zip")
 
         image_paths = convert_pdf_to_images(
             saved_path,
@@ -65,7 +60,7 @@ async def pdf_to_image(
         create_images_zip(image_paths, output_zip_path)
 
         if output_dir is not None:
-            delete_directory(output_dir)
+            safe_delete_directory(output_dir)
 
         return FileResponse(
             path=output_zip_path,
@@ -80,12 +75,9 @@ async def pdf_to_image(
     except Exception as exc:
         if output_zip_path is not None:
             safe_delete_file(output_zip_path)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to process PDF to image request.",
-        ) from exc
+        raise processing_failure("Failed to process PDF to image request.") from exc
     finally:
         if saved_path is not None:
             safe_delete_file(saved_path)
         if output_dir is not None:
-            delete_directory(output_dir)
+            safe_delete_directory(output_dir)

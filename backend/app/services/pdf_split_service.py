@@ -1,18 +1,17 @@
 import re
 from pathlib import Path
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pypdf import PdfReader, PdfWriter
+
+from app.utils.errors import invalid_page_ranges, missing_file, processing_failure
 
 PAGE_RANGE_PATTERN = re.compile(r"^\d+(?:-\d+)?$")
 
 
 def parse_page_ranges(page_ranges: str, total_pages: int) -> list[int]:
     if not page_ranges or not page_ranges.strip():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Page ranges cannot be empty.",
-        )
+        raise invalid_page_ranges("Page ranges cannot be empty.")
 
     selected_pages: list[int] = []
     seen_pages: set[int] = set()
@@ -21,21 +20,14 @@ def parse_page_ranges(page_ranges: str, total_pages: int) -> list[int]:
         part = raw_part.strip()
 
         if not part:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Page ranges cannot contain empty entries.",
-            )
+            raise invalid_page_ranges("Page ranges cannot contain empty entries.")
 
         if part.startswith("-") or "--" in part:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Page numbers must be positive integers.",
-            )
+            raise invalid_page_ranges("Page numbers must be positive integers.")
 
         if not PAGE_RANGE_PATTERN.fullmatch(part):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid page range format. Use values like 1-3,5,7-9.",
+            raise invalid_page_ranges(
+                "Invalid page range format. Use values like 1-3,5,7-9."
             )
 
         if "-" in part:
@@ -44,21 +36,16 @@ def parse_page_ranges(page_ranges: str, total_pages: int) -> list[int]:
             start_page = end_page = int(part)
 
         if start_page < 1 or end_page < 1:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Page numbers must be positive integers.",
-            )
+            raise invalid_page_ranges("Page numbers must be positive integers.")
 
         if start_page > end_page:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Page range start cannot be greater than page range end.",
+            raise invalid_page_ranges(
+                "Page range start cannot be greater than page range end."
             )
 
         if end_page > total_pages:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Page range is out of bounds. PDF has {total_pages} pages.",
+            raise invalid_page_ranges(
+                f"Page range is out of bounds. PDF has {total_pages} pages."
             )
 
         for page_number in range(start_page, end_page + 1):
@@ -77,6 +64,9 @@ def split_pdf(
     selected_pages: list[int],
 ) -> Path:
     try:
+        if not input_path.exists():
+            raise missing_file("Uploaded PDF file was not found.")
+
         reader = PdfReader(str(input_path))
         writer = PdfWriter()
 
@@ -92,7 +82,4 @@ def split_pdf(
     except HTTPException:
         raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to split PDF file.",
-        ) from exc
+        raise processing_failure("Failed to split PDF file.") from exc

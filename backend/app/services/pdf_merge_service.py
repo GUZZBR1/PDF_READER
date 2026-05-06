@@ -1,7 +1,9 @@
 from pathlib import Path
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pypdf import PdfReader, PdfWriter
+
+from app.utils.errors import missing_file, processing_failure
 
 
 def merge_pdfs(input_paths: list[Path], output_path: Path) -> Path:
@@ -9,6 +11,9 @@ def merge_pdfs(input_paths: list[Path], output_path: Path) -> Path:
         writer = PdfWriter()
 
         for input_path in input_paths:
+            if not input_path.exists():
+                raise missing_file("One or more uploaded PDF files were not found.")
+
             reader = PdfReader(str(input_path))
 
             for page in reader.pages:
@@ -20,8 +25,7 @@ def merge_pdfs(input_paths: list[Path], output_path: Path) -> Path:
             writer.write(output_file)
 
         return output_path
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to merge PDF files.",
-        ) from exc
+        raise processing_failure("Failed to merge PDF files.") from exc

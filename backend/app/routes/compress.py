@@ -1,12 +1,12 @@
 from pathlib import Path
-from uuid import uuid4
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 
 from app.services.pdf_compress_service import COMPRESSION_SETTINGS, compress_pdf
-from app.utils.file_utils import ensure_temp_dir, safe_delete_file, save_upload_file
+from app.utils.errors import invalid_compression_level, processing_failure
+from app.utils.file_utils import create_temp_output_path, safe_delete_file, save_upload_file
 from app.utils.validation import validate_pdf_upload
 
 router = APIRouter(prefix="/pdf", tags=["pdf"])
@@ -23,15 +23,12 @@ async def compress_pdf_file(
 
     try:
         if normalized_level not in COMPRESSION_SETTINGS:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid compression level. Allowed levels are low, medium, and high.",
-            )
+            raise invalid_compression_level()
 
         await validate_pdf_upload(file)
         saved_path, _ = await save_upload_file(file)
 
-        output_path = ensure_temp_dir() / f"compressed-{uuid4().hex}.pdf"
+        output_path = create_temp_output_path("compressed", ".pdf")
         compress_pdf(saved_path, output_path, compression_level=normalized_level)
 
         return FileResponse(
@@ -47,10 +44,7 @@ async def compress_pdf_file(
     except Exception as exc:
         if output_path is not None:
             safe_delete_file(output_path)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to process PDF compress request.",
-        ) from exc
+        raise processing_failure("Failed to process PDF compress request.") from exc
     finally:
         if saved_path is not None:
             safe_delete_file(saved_path)

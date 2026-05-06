@@ -1,9 +1,16 @@
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError
+
+from app.utils.errors import (
+    invalid_file,
+    missing_file,
+    processing_failure,
+    unsupported_format,
+)
 
 SUPPORTED_OUTPUT_FORMATS = {"png", "jpeg"}
 
@@ -17,42 +24,41 @@ def convert_pdf_to_images(
     normalized_format = image_format.strip().lower()
 
     if normalized_format not in SUPPORTED_OUTPUT_FORMATS:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid image format. Allowed formats are png and jpeg.",
+        raise unsupported_format(
+            "Invalid image format. Allowed formats are png and jpeg."
         )
 
     try:
+        if not input_path.exists():
+            raise missing_file("Uploaded PDF file was not found.")
+
         output_dir.mkdir(parents=True, exist_ok=True)
-        pages = convert_from_path(
+        generated_paths = convert_from_path(
             str(input_path),
             dpi=dpi,
             fmt=normalized_format,
+            output_folder=str(output_dir),
+            output_file="page",
+            paths_only=True,
         )
         image_paths: list[Path] = []
 
-        for index, page in enumerate(pages, start=1):
+        for index, generated_path in enumerate(generated_paths, start=1):
             image_path = output_dir / f"page-{index}.{normalized_format}"
-            page.save(image_path, normalized_format.upper())
+            Path(generated_path).replace(image_path)
             image_paths.append(image_path)
-            page.close()
 
         return image_paths
     except PDFInfoNotInstalledError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="PDF to image conversion requires poppler-utils to be installed.",
+        raise processing_failure(
+            "PDF to image conversion requires poppler-utils to be installed."
         ) from exc
     except (PDFPageCountError, PDFSyntaxError) as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not read uploaded PDF file.",
-        ) from exc
+        raise invalid_file("Could not read uploaded PDF file.") from exc
+    except HTTPException:
+        raise
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to convert PDF to images.",
-        ) from exc
+        raise processing_failure("Failed to convert PDF to images.") from exc
 
 
 def create_images_zip(
@@ -60,10 +66,7 @@ def create_images_zip(
     output_zip_path: Path,
 ) -> Path:
     if not image_paths:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="No images were generated from the PDF.",
-        )
+        raise processing_failure("No images were generated from the PDF.")
 
     try:
         output_zip_path.parent.mkdir(parents=True, exist_ok=True)
@@ -74,7 +77,4 @@ def create_images_zip(
 
         return output_zip_path
     except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create images ZIP file.",
-        ) from exc
+        raise processing_failure("Failed to create images ZIP file.") from exc
