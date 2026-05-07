@@ -1,5 +1,7 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import get_allowed_origins
 from app.routes.compress import router as compress_router
 from app.routes.image_to_pdf import router as image_to_pdf_router
 from app.routes.merge import router as merge_router
@@ -13,6 +15,14 @@ app = FastAPI(
     title="Private PDF Tool",
     description="Private backend API for personal PDF utilities.",
     version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_allowed_origins(),
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(compress_router)

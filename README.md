@@ -19,7 +19,7 @@ workspace.
 - Backend: FastAPI, Python, PyPDF, Pillow, pdf2image
 - Frontend: Next.js, React, TypeScript, App Router
 - System tools: Ghostscript for compression, poppler-utils for PDF-to-image
-- Runtime: Docker Compose for the backend service
+- Runtime: Docker Compose for backend and frontend services
 
 ## Local Setup
 
@@ -39,12 +39,62 @@ NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 
 `NEXT_PUBLIC_BACKEND_BASE_URL` is still supported for compatibility.
 
-## Backend Startup
+## Docker Startup
 
-Recommended backend startup:
+Recommended MVP startup:
 
 ```bash
 docker compose up --build
+```
+
+This starts:
+
+- backend API: `http://localhost:8000`
+- frontend app: `http://localhost:3000`
+
+Health check:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Expected response:
+
+```json
+{
+  "status": "ok",
+  "service": "private-pdf-tool"
+}
+```
+
+Copy `.env.example` to `.env` when deploying with custom URLs:
+
+```bash
+cp .env.example .env
+```
+
+Important: `NEXT_PUBLIC_API_URL` is compiled into the frontend image at build
+time. Rebuild the frontend image after changing it.
+
+## Environment Variables
+
+| Variable | Used by | Default | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | frontend build | `http://localhost:8000` | Public browser URL for the backend API |
+| `NEXT_PUBLIC_BACKEND_BASE_URL` | frontend build | none | Legacy frontend API URL fallback |
+| `ALLOWED_ORIGINS` | backend runtime | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated CORS origins |
+
+For a remote VPS, `localhost` means the user's own machine in browser-side
+JavaScript. Set `NEXT_PUBLIC_API_URL` to the public backend URL, such as
+`http://your-vps-ip:8000`, and set `ALLOWED_ORIGINS` to the public frontend URL
+before rebuilding. For a domain deployment, use the public HTTPS URLs.
+
+## Backend Startup
+
+For backend-only Docker development:
+
+```bash
+docker compose up backend --build
 ```
 
 The backend API runs on:
@@ -93,13 +143,27 @@ npm run build
 
 ## Docker Usage
 
-`docker-compose.yml` currently builds and runs the backend service only. The
-frontend runs through the local Next.js scripts during MVP development.
+`docker-compose.yml` builds production-style images for both services. It does
+not bind-mount source code by default, so it is closer to a small VPS runtime
+than a hot-reload development setup.
 
 Backend system dependencies are installed in `backend/Dockerfile`:
 
 - `ghostscript`
 - `poppler-utils`
+
+The backend temp directory is mounted as container tmpfs at `/app/app/temp`.
+Uploads and generated downloads should be removed by the app after each
+response, and the tmpfs avoids persisting temporary files between container
+restarts.
+
+Runtime dependency checks:
+
+```bash
+docker compose exec backend gs --version
+docker compose exec backend pdftoppm -v
+docker compose exec backend python -c "import fastapi, pypdf, PIL, pdf2image"
+```
 
 ## API Routes
 
@@ -129,12 +193,10 @@ Backend system dependencies are installed in `backend/Dockerfile`:
 ## Smoke Test Checklist
 
 Before first deployment, run a full browser smoke test with Docker and the
-frontend dev server running:
+frontend service running:
 
 ```bash
 docker compose up --build
-cd frontend
-npm run dev
 ```
 
 Use representative local files:
@@ -157,12 +219,21 @@ Validate each frontend tool downloads an output file:
 - Convert a PDF to PNG and JPEG ZIP outputs at multiple DPI values
 - Compress the same PDF with low, medium, and high levels and compare sizes
 
-After each backend run, confirm `backend/app/temp` only contains `.gitkeep`.
+After each backend run, confirm the container temp directory is empty or only
+contains `.gitkeep`:
+
+```bash
+docker compose exec backend find /app/app/temp -maxdepth 1 -type f -print
+```
 
 ## Troubleshooting
 
 - If the frontend loads but conversions fail, confirm the backend is reachable
   at `http://localhost:8000/health`.
+- If browser requests are blocked by CORS, set `ALLOWED_ORIGINS` to the frontend
+  origin, for example `https://pdf.example.com`.
+- If the frontend calls the wrong backend URL, set `NEXT_PUBLIC_API_URL` and
+  rebuild with `docker compose up --build`.
 - If PDF-to-image fails in Docker, rebuild the backend image and confirm
   `poppler-utils` is installed.
 - If compression fails in Docker, rebuild the backend image and confirm
@@ -171,6 +242,16 @@ After each backend run, confirm `backend/app/temp` only contains `.gitkeep`.
   dependencies in `backend/requirements.txt`, Ghostscript, and Poppler.
 - `NEXT_PUBLIC_API_URL` controls the frontend backend URL. It defaults to
   `http://localhost:8000`.
+
+## Production Notes
+
+- This MVP exposes frontend and backend as separate ports: `3000` and `8000`.
+- Put a reverse proxy or TLS termination in front of the services when deploying
+  publicly.
+- Keep uploaded files local to the backend container; no cloud storage or
+  database is used.
+- Rebuild after changing public frontend environment variables.
+- Run the full smoke checklist after every deployment image rebuild.
 
 ## Development Notes
 
