@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 const ROTATION_ANGLES = [90, 180, 270] as const;
@@ -80,7 +80,7 @@ export default function RotatePage() {
       formData.append("pages_to_rotate", normalizedPages);
       formData.append("angle", String(angle));
 
-      const response = await fetch(apiEndpoint("/pdf/rotate"), {
+      const response = await apiFetch("/pdf/rotate", {
         method: "POST",
         body: formData,
       });

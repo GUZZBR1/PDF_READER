@@ -1,3 +1,5 @@
+import { getStoredAppPassword } from "@/lib/auth";
+
 export const BACKEND_BASE_URL = (
   process.env.NEXT_PUBLIC_API_URL ??
   process.env.NEXT_PUBLIC_BACKEND_BASE_URL ??
@@ -7,6 +9,20 @@ export const BACKEND_BASE_URL = (
 export function apiEndpoint(path: string) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${BACKEND_BASE_URL}${normalizedPath}`;
+}
+
+export function apiFetch(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  const password = getStoredAppPassword();
+
+  if (password) {
+    headers.set("x-app-password", password);
+  }
+
+  return fetch(apiEndpoint(path), {
+    ...init,
+    headers,
+  });
 }
 
 export async function readApiErrorMessage(

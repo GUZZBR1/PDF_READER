@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { formatFileSize, isPdfBlob } from "@/lib/files";
 
 const ACCEPTED_IMAGE_TYPES = ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp";
@@ -123,7 +123,7 @@ export default function ImageToPdfPage() {
         formData.append("files", image.file);
       }
 
-      const response = await fetch(apiEndpoint("/image/to-pdf"), {
+      const response = await apiFetch("/image/to-pdf", {
         method: "POST",
         body: formData,
       });

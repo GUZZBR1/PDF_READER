@@ -10,7 +10,9 @@ FROM node:22-slim AS build
 WORKDIR /app
 
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
+ARG NEXT_PUBLIC_AUTH_ENABLED=true
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_AUTH_ENABLED=${NEXT_PUBLIC_AUTH_ENABLED}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

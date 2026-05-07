@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function SplitPage() {
@@ -66,7 +66,7 @@ export default function SplitPage() {
       formData.append("file", files[0]);
       formData.append("page_ranges", pageRanges.trim());
 
-      const response = await fetch(apiEndpoint("/pdf/split"), {
+      const response = await apiFetch("/pdf/split", {
         method: "POST",
         body: formData,
       });

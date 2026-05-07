@@ -1,3 +1,4 @@
+import LogoutButton from "@/components/LogoutButton";
 import PageHeader from "@/components/PageHeader";
 import ToolCard from "@/components/ToolCard";
 import { tools } from "./toolData";
@@ -12,7 +13,10 @@ export default function Home() {
           </span>
           <span>Private PDF Tool</span>
         </div>
-        <span className="private-badge">Local workspace</span>
+        <div className="topbar-actions">
+          <span className="private-badge">Local workspace</span>
+          <LogoutButton />
+        </div>
       </nav>
 
       <PageHeader

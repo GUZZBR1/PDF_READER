@@ -73,14 +73,22 @@ Copy `.env.example` to `.env` when deploying with custom URLs:
 cp .env.example .env
 ```
 
+Edit `.env` and replace `APP_PASSWORD` with a private value before exposing the
+app.
+
 Important: `NEXT_PUBLIC_API_URL` is compiled into the frontend image at build
 time. Rebuild the frontend image after changing it.
+
+Set `APP_PASSWORD` before using the protected tools. If it is empty, the
+backend starts but protected tool routes return `401`.
 
 ## Environment Variables
 
 | Variable | Used by | Default | Purpose |
 | --- | --- | --- | --- |
+| `APP_PASSWORD` | backend runtime | empty | Shared private password required for tool API requests |
 | `NEXT_PUBLIC_API_URL` | frontend build | `http://localhost:8000` | Public browser URL for the backend API |
+| `NEXT_PUBLIC_AUTH_ENABLED` | frontend build | `true` | Enables the frontend login gate |
 | `NEXT_PUBLIC_BACKEND_BASE_URL` | frontend build | none | Legacy frontend API URL fallback |
 | `ALLOWED_ORIGINS` | backend runtime | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated CORS origins |
 
@@ -89,12 +97,40 @@ JavaScript. Set `NEXT_PUBLIC_API_URL` to the public backend URL, such as
 `http://your-vps-ip:8000`, and set `ALLOWED_ORIGINS` to the public frontend URL
 before rebuilding. For a domain deployment, use the public HTTPS URLs.
 
+## Private Access
+
+This MVP uses lightweight shared-password protection for private deployments
+only. It is not a full SaaS authentication system.
+
+Frontend behavior:
+
+- `/login` asks for the shared password.
+- The password is stored in browser `localStorage`.
+- Homepage and all tool pages redirect to `/login` when
+  `NEXT_PUBLIC_AUTH_ENABLED=true` and no password is stored.
+- Logout clears the stored password and redirects to `/login`.
+
+Backend behavior:
+
+- `/health` remains public.
+- `/pdf/*`, `/image/*`, and `/upload/*` require the `x-app-password` header.
+- Missing or invalid passwords return `401` with a JSON error message.
+- No users, registration, database, sessions, or password reset flow exist.
+
+Security limitations:
+
+- Use HTTPS or a trusted private network before exposing this publicly.
+- Anyone with browser/device access can inspect or clear the localStorage value.
+- Rotating the password requires updating `APP_PASSWORD` and restarting the
+  backend.
+- Changing `NEXT_PUBLIC_AUTH_ENABLED` requires rebuilding the frontend image.
+
 ## Backend Startup
 
 For backend-only Docker development:
 
 ```bash
-docker compose up backend --build
+APP_PASSWORD=replace-with-a-private-password docker compose up backend --build
 ```
 
 The backend API runs on:
@@ -260,5 +296,5 @@ docker compose exec backend find /app/app/temp -maxdepth 1 -type f -print
 - Download files are cleaned with response background tasks.
 - Frontend requests are centralized in `frontend/src/lib/api.ts`.
 - Shared frontend file helpers live in `frontend/src/lib/files.ts`.
-- No authentication, database, cloud storage, OCR, queues, or user accounts are
-  included in this MVP.
+- Authentication is a lightweight shared-password gate only; no database, cloud
+  storage, OCR, queues, or user accounts are included in this MVP.

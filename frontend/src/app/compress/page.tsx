@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 const COMPRESSION_LEVELS = [
@@ -85,7 +85,7 @@ export default function CompressPage() {
       formData.append("file", files[0]);
       formData.append("compression_level", compressionLevel);
 
-      const response = await fetch(apiEndpoint("/pdf/compress"), {
+      const response = await apiFetch("/pdf/compress", {
         method: "POST",
         body: formData,
       });

@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function RemovePagesPage() {
@@ -66,7 +66,7 @@ export default function RemovePagesPage() {
       formData.append("file", files[0]);
       formData.append("pages_to_remove", pagesToRemove.trim());
 
-      const response = await fetch(apiEndpoint("/pdf/remove-pages"), {
+      const response = await apiFetch("/pdf/remove-pages", {
         method: "POST",
         body: formData,
       });

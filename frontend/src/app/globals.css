@@ -63,6 +63,19 @@ input:focus-visible {
   margin-bottom: 32px;
 }
 
+.topbar-actions,
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.topbar-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -207,6 +220,28 @@ h1 {
   color: var(--accent);
   font-size: 0.94rem;
   font-weight: 700;
+}
+
+.logout-button {
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: var(--text);
+  background: var(--surface);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.auth-panel {
+  display: grid;
+  width: min(100%, 420px);
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .tool-layout {
@@ -609,6 +644,10 @@ h1 {
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .topbar-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 520px) {
@@ -620,6 +659,7 @@ h1 {
   .tool-card,
   .form-panel,
   .image-list-panel,
+  .auth-panel,
   .upload-panel,
   .status-panel {
     box-shadow: none;

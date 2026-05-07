@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 
 TEMP_DIR = Path(__file__).resolve().parent / "temp"
+APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 
 DEFAULT_ALLOWED_ORIGINS = (
     "http://localhost:3000",

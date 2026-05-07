@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import FileUpload from "@/components/FileUpload";
 import PageHeader from "@/components/PageHeader";
-import { apiEndpoint, downloadBlob, readApiErrorMessage } from "@/lib/api";
+import { apiFetch, downloadBlob, readApiErrorMessage } from "@/lib/api";
 import { isPdfBlob, isPdfFile } from "@/lib/files";
 
 export default function MergePage() {
@@ -52,7 +52,7 @@ export default function MergePage() {
         formData.append("files", file);
       });
 
-      const response = await fetch(apiEndpoint("/pdf/merge"), {
+      const response = await apiFetch("/pdf/merge", {
         method: "POST",
         body: formData,
       });
