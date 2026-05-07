@@ -41,7 +41,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 
 ## Docker Startup
 
-Recommended MVP startup:
+Create a local environment file first:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and replace `APP_PASSWORD` with a strong private value. Then start
+both services:
 
 ```bash
 docker compose up --build
@@ -67,26 +74,75 @@ Expected response:
 }
 ```
 
-Copy `.env.example` to `.env` when deploying with custom URLs:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and replace `APP_PASSWORD` with a private value before exposing the
-app.
+Docker Compose requires `APP_PASSWORD` before startup. If it is missing or
+empty, Compose stops before launching the backend.
 
 Important: `NEXT_PUBLIC_API_URL` is compiled into the frontend image at build
 time. Rebuild the frontend image after changing it.
 
-Set `APP_PASSWORD` before using the protected tools. If it is empty, the
-backend starts but protected tool routes return `401`.
+## VPS / Local Server Deployment
+
+For a simple private VPS or local server, use Docker Compose directly:
+
+```bash
+git clone https://github.com/GUZZBR1/PDF_READER.git
+cd PDF_READER
+cp .env.example .env
+```
+
+Edit `.env`:
+
+```env
+APP_PASSWORD=use-a-long-random-password
+NEXT_PUBLIC_API_URL=http://YOUR_SERVER_IP:8000
+NEXT_PUBLIC_AUTH_ENABLED=true
+ALLOWED_ORIGINS=http://YOUR_SERVER_IP:3000
+```
+
+Start the deployment:
+
+```bash
+docker compose up -d --build
+```
+
+Check the backend:
+
+```bash
+curl http://YOUR_SERVER_IP:8000/health
+```
+
+Open the frontend:
+
+```text
+http://YOUR_SERVER_IP:3000
+```
+
+Useful operations:
+
+```bash
+docker compose logs -f
+docker compose restart
+docker compose down
+```
+
+For a domain deployment, set `NEXT_PUBLIC_API_URL` to the public backend URL and
+`ALLOWED_ORIGINS` to the exact public frontend origin. Example:
+
+```env
+NEXT_PUBLIC_API_URL=https://api.pdf.example.com
+ALLOWED_ORIGINS=https://pdf.example.com
+```
+
+Use HTTPS before exposing the tool on the public internet. Reverse proxy
+examples and deployment details are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Operational commands are in [docs/OPERATIONS.md](docs/OPERATIONS.md). Manual
+release checks are in [docs/SMOKE_TEST.md](docs/SMOKE_TEST.md).
 
 ## Environment Variables
 
 | Variable | Used by | Default | Purpose |
 | --- | --- | --- | --- |
-| `APP_PASSWORD` | backend runtime | empty | Shared private password required for tool API requests |
+| `APP_PASSWORD` | backend runtime / Docker Compose | required | Shared private password required for tool API requests |
 | `NEXT_PUBLIC_API_URL` | frontend build | `http://localhost:8000` | Public browser URL for the backend API |
 | `NEXT_PUBLIC_AUTH_ENABLED` | frontend build | `true` | Enables the frontend login gate |
 | `NEXT_PUBLIC_BACKEND_BASE_URL` | frontend build | none | Legacy frontend API URL fallback |
@@ -130,7 +186,7 @@ Security limitations:
 For backend-only Docker development:
 
 ```bash
-APP_PASSWORD=replace-with-a-private-password docker compose up backend --build
+APP_PASSWORD=replace-with-a-strong-private-password docker compose up backend --build
 ```
 
 The backend API runs on:
@@ -228,8 +284,8 @@ docker compose exec backend python -c "import fastapi, pypdf, PIL, pdf2image"
 
 ## Smoke Test Checklist
 
-Before first deployment, run a full browser smoke test with Docker and the
-frontend service running:
+Before first deployment, run a full browser smoke test with `.env` configured
+and the Docker frontend service running:
 
 ```bash
 docker compose up --build

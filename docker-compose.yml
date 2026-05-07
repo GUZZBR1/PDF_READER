@@ -1,10 +1,12 @@
 services:
   backend:
+    container_name: private-pdf-backend
     build:
       context: ./backend
+    restart: unless-stopped
     environment:
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}"
-      APP_PASSWORD: "${APP_PASSWORD:-}"
+      APP_PASSWORD: "${APP_PASSWORD:?Set APP_PASSWORD in .env before starting}"
     ports:
       - "8000:8000"
     tmpfs:
@@ -21,11 +23,13 @@ services:
       start_period: 10s
 
   frontend:
+    container_name: private-pdf-frontend
     build:
       context: ./frontend
       args:
         NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:8000}"
         NEXT_PUBLIC_AUTH_ENABLED: "${NEXT_PUBLIC_AUTH_ENABLED:-true}"
+    restart: unless-stopped
     depends_on:
       backend:
         condition: service_healthy
@@ -34,3 +38,13 @@ services:
       PORT: 3000
     ports:
       - "3000:3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/login').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
